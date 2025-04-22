@@ -47,7 +47,7 @@ const UserDashboard = () => {
           .from('user_profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (!error && data) {
           setUserProfile(data);

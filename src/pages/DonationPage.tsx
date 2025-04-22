@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { Heart, CreditCard, Check } from 'lucide-react';
 import { sheltersData } from '../data/sheltersData';
 
-const donationAmounts = [15, 25, 50, 100, 250];
+const donationAmounts = [500, 1000, 2000, 5000, 10000];
 
 const DonationPage = () => {
-  const [donationAmount, setDonationAmount] = useState<number | null>(25);
+  const [donationAmount, setDonationAmount] = useState<number | null>(1000);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [isMonthly, setIsMonthly] = useState(false);
   const [selectedShelterId, setSelectedShelterId] = useState<string>('');
@@ -30,7 +30,6 @@ const DonationPage = () => {
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, process payment here
     setShowThankYou(true);
   };
 
@@ -84,7 +83,6 @@ const DonationPage = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {/* Left Side - Donation Form */}
           <motion.div
             className="bg-white rounded-xl shadow-card p-6 md:p-8"
             initial={{ opacity: 0, x: -20 }}
@@ -93,7 +91,6 @@ const DonationPage = () => {
           >
             <h2 className="text-2xl font-semibold mb-6">Make a Donation</h2>
             <form onSubmit={handleSubmit}>
-              {/* Donation Amount Selection */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Select Donation Amount
@@ -110,7 +107,7 @@ const DonationPage = () => {
                       }`}
                       onClick={() => handleAmountClick(amount)}
                     >
-                      ${amount}
+                      ₹{amount}
                     </button>
                   ))}
                 </div>
@@ -120,7 +117,7 @@ const DonationPage = () => {
                     Custom Amount
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-gray-500">$</span>
+                    <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
                     <input
                       type="text"
                       id="customAmount"
@@ -165,7 +162,6 @@ const DonationPage = () => {
                 </div>
               </div>
 
-              {/* Payment Information */}
               <div className="mb-6">
                 <h3 className="text-lg font-medium mb-4">Payment Information</h3>
                 <div className="space-y-4">
@@ -257,13 +253,12 @@ const DonationPage = () => {
                 disabled={!donationAmount || donationAmount <= 0}
               >
                 <Heart className="mr-2 h-5 w-5" fill="currentColor" />
-                Donate {donationAmount && donationAmount > 0 ? `$${donationAmount}` : ''} 
+                Donate {donationAmount && donationAmount > 0 ? `₹${donationAmount}` : ''} 
                 {isMonthly ? ' Monthly' : ''}
               </button>
             </form>
           </motion.div>
 
-          {/* Right Side - Impact Information */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -277,7 +272,7 @@ const DonationPage = () => {
                     <Check className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800 mb-1">$25 provides</h3>
+                    <h3 className="font-medium text-gray-800 mb-1">₹500 provides</h3>
                     <p className="text-gray-600">Food and basic care for a shelter animal for one week</p>
                   </div>
                 </div>
@@ -287,7 +282,7 @@ const DonationPage = () => {
                     <Check className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800 mb-1">$50 provides</h3>
+                    <h3 className="font-medium text-gray-800 mb-1">₹1000 provides</h3>
                     <p className="text-gray-600">Vaccinations and preventative medications for two animals</p>
                   </div>
                 </div>
@@ -297,7 +292,7 @@ const DonationPage = () => {
                     <Check className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800 mb-1">$100 provides</h3>
+                    <h3 className="font-medium text-gray-800 mb-1">₹2000 provides</h3>
                     <p className="text-gray-600">Spay/neuter surgery for one animal, helping to prevent overpopulation</p>
                   </div>
                 </div>
@@ -307,7 +302,7 @@ const DonationPage = () => {
                     <Check className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800 mb-1">$250 provides</h3>
+                    <h3 className="font-medium text-gray-800 mb-1">₹5000 provides</h3>
                     <p className="text-gray-600">Emergency medical care for an injured or sick animal</p>
                   </div>
                 </div>
@@ -317,7 +312,7 @@ const DonationPage = () => {
             <div className="bg-gray-800 rounded-xl shadow-card p-6 md:p-8 text-white">
               <h2 className="text-xl font-semibold mb-4">Our Promise to You</h2>
               <p className="mb-4">
-                We are committed to using your donation responsibly. At least 85% of every dollar goes directly to animal care and programs.
+                We are committed to using your donation responsibly. At least 85% of every rupee goes directly to animal care and programs.
               </p>
               <p>
                 Pet Zone is a registered 501(c)(3) nonprofit organization. Your donation is tax-deductible to the fullest extent allowed by law.

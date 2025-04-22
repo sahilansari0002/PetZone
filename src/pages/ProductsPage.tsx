@@ -193,11 +193,11 @@ const ProductsPage = () => {
                   <div>
                     {product.salePrice ? (
                       <>
-                        <span className="text-error-600 font-bold">${product.salePrice.toFixed(2)}</span>
-                        <span className="text-gray-500 text-sm line-through ml-2">${product.price.toFixed(2)}</span>
+                        <span className="text-error-600 font-bold">₹{product.salePrice.toFixed(2)}</span>
+                        <span className="text-gray-500 text-sm line-through ml-2">₹{product.price.toFixed(2)}</span>
                       </>
                     ) : (
-                      <span className="text-gray-900 font-bold">${product.price.toFixed(2)}</span>
+                      <span className="text-gray-900 font-bold">₹{product.price.toFixed(2)}</span>
                     )}
                   </div>
                   <button className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-full transition-colors">

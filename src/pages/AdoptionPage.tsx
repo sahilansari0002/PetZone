@@ -84,15 +84,22 @@ const AdoptionPage = () => {
         };
 
         try {
+          // Find the pet's UUID from petsData
+          const petUuid = petsData.find(p => p.id === id)?.id;
+          
+          if (!petUuid) {
+            throw new Error('Invalid pet ID');
+          }
+
           const { error } = await supabase
             .from('adoption_applications')
             .insert([{
               user_id: user?.id,
-              pet_id: id,
+              pet_id: petUuid,
               personal_info: finalFormData.personalInfo,
               home_info: finalFormData.homeInfo,
               experience: finalFormData.experience,
-              references: finalFormData.references
+              reference_info: finalFormData.references
             }]);
 
           if (error) throw error;

@@ -63,10 +63,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      // First create the auth user
+      // Create the auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
       });
 
       if (authError) {
@@ -74,19 +79,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       if (authData.user) {
-        // Use the service role client to bypass RLS for initial profile creation
-        const { error: profileError } = await supabase.auth.admin.createUser({
-          email,
-          password,
-          user_metadata: { full_name: name }
-        });
-
-        if (profileError) {
-          // If profile creation fails, clean up the auth user
-          await supabase.auth.admin.deleteUser(authData.user.id);
-          return { error: 'Failed to create user profile' };
-        }
-
         // Create the user profile
         const { error: insertError } = await supabase
           .from('user_profiles')
@@ -94,7 +86,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         if (insertError) {
           // If profile creation fails, clean up the auth user
-          await supabase.auth.admin.deleteUser(authData.user.id);
+          await supabase.auth.signOut();
           return { error: 'Failed to create user profile' };
         }
       }
