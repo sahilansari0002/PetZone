@@ -4,21 +4,21 @@ const testimonials = [
   {
     id: 1,
     quote: "Adopting from Pet Zone was the best decision we've ever made. The process was smooth, and our new pup has brought so much joy to our family.",
-    author: "Sarah & Michael Johnson",
+    author: "Aditi M",
     image: "https://images.pexels.com/photos/5409509/pexels-photo-5409509.jpeg",
     petName: "Max"
   },
   {
     id: 2,
     quote: "The staff truly cares about matching the right pet with the right family. Our senior cat has been the perfect addition to our quiet home.",
-    author: "Robert Chen",
+    author: "SANDEEP",
     image: "https://images.pexels.com/photos/8108098/pexels-photo-8108098.jpeg",
     petName: "Luna"
   },
   {
     id: 3,
     quote: "From the first visit to the post-adoption follow-ups, Pet Zone made the experience wonderful. We couldn't be happier with our rescue dog.",
-    author: "The Williams Family",
+    author: "Harish",
     image: "https://images.pexels.com/photos/6816854/pexels-photo-6816854.jpeg",
     petName: "Charlie"
   }
