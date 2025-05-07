@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { PawPrint, Facebook, Twitter, Instagram, Youtube as YouTube, Mail, Phone, MapPin } from 'lucide-react';
+import { PawPrint, Facebook, LinkedIn, Instagram, Youtube as YouTube, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -19,22 +19,16 @@ const Footer = () => {
               We're dedicated to animal welfare and creating happy families.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-primary-500 transition-colors">
-                <Facebook className="w-5 h-5" />
-                <span className="sr-only">Facebook</span>
+
+              <a href="https://www.linkedin.com/in/sahilansari0002" className="text-gray-400 hover:text-primary-500 transition-colors">
+                <LinkedIn className="w-5 h-5" />
+                <span className="sr-only">LinkedIn</span>
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary-500 transition-colors">
-                <Twitter className="w-5 h-5" />
-                <span className="sr-only">Twitter</span>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-primary-500 transition-colors">
+              <a href="https://www.instagram.com/sahilansari0002/" className="text-gray-400 hover:text-primary-500 transition-colors">
                 <Instagram className="w-5 h-5" />
                 <span className="sr-only">Instagram</span>
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary-500 transition-colors">
-                <YouTube className="w-5 h-5" />
-                <span className="sr-only">YouTube</span>
-              </a>
+
             </div>
           </div>
 
