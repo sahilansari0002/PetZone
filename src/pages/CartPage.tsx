@@ -1,20 +1,66 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const CartPage = () => {
   const { items, removeItem, updateQuantity, total, loading, clearCart } = useCart();
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setUserProfile(data);
+        setFormData({
+          fullName: data.full_name || '',
+          phone: data.phone || '',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: '',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const handleCheckout = async () => {
     if (!user?.id || items.length === 0) {
       setError('Unable to process checkout. Please ensure you are logged in.');
+      return;
+    }
+
+    if (!formData.address || !formData.phone) {
+      setShowAddressForm(true);
       return;
     }
 
@@ -36,6 +82,10 @@ const CartPage = () => {
         body: JSON.stringify({
           cartItems: cartItemsWithUserId,
           userEmail: user.email,
+          userProfile: {
+            ...userProfile,
+            ...formData
+          }
         }),
       });
 
@@ -46,6 +96,7 @@ const CartPage = () => {
 
       await clearCart();
       alert('Order processed successfully! Check your email for confirmation.');
+      setShowAddressForm(false);
     } catch (error: any) {
       console.error('Error processing order:', error);
       setError(error.message || 'Failed to process order. Please try again.');
@@ -165,6 +216,88 @@ const CartPage = () => {
                 </motion.div>
               ))}
             </div>
+
+            {showAddressForm && (
+              <div className="p-6 border-t border-gray-200">
+                <h3 className="text-lg font-semibold mb-4">Shipping Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        ZIP Code
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.zipCode}
+                        onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="p-6 bg-gray-50">
               <div className="flex justify-between items-center mb-6">

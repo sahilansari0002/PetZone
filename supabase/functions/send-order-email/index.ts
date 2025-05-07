@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cartItems, userEmail } = await req.json();
+    const { cartItems, userEmail, userProfile } = await req.json();
 
     // Validate cart items and user ID
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
@@ -42,7 +42,7 @@ serve(async (req) => {
 
     // Create email transporter with Gmail SMTP
     const transporter = nodemailer.createTransport({
-      service: 'gmail',  // Using 'gmail' service instead of manual host/port
+      service: 'gmail',
       auth: {
         user: emailUser,
         pass: emailPass,
@@ -54,10 +54,17 @@ serve(async (req) => {
       sum + (item.product.price * item.quantity), 0
     );
 
-    // Create email content
+    // Create email content with user details
     const emailContent = `
       <h2>New Order Received</h2>
-      <p>Order from: ${userEmail}</p>
+      <h3>Customer Details:</h3>
+      <p>Name: ${userProfile?.full_name || 'Not provided'}</p>
+      <p>Email: ${userEmail}</p>
+      <p>Phone: ${userProfile?.phone || 'Not provided'}</p>
+      <p>Shipping Address:</p>
+      <p>${userProfile?.address || 'Not provided'}</p>
+      <p>${userProfile?.city || ''}, ${userProfile?.state || ''} ${userProfile?.zipCode || ''}</p>
+      
       <h3>Order Details:</h3>
       <ul>
         ${cartItems.map((item: any) => `
@@ -66,7 +73,7 @@ serve(async (req) => {
           </li>
         `).join('')}
       </ul>
-      <p>Total: ₹${total.toFixed(2)}</p>
+      <p><strong>Total: ₹${total.toFixed(2)}</strong></p>
     `;
 
     // Send email

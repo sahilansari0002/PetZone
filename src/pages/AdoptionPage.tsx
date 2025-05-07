@@ -7,7 +7,6 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
-// Step interfaces
 interface PersonalInfoData {
   firstName: string;
   lastName: string;
@@ -52,7 +51,6 @@ const AdoptionPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // First, fetch the pet data from Supabase instead of using petsData array
   const [pet, setPet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +65,6 @@ const AdoptionPage = () => {
   
   const { register, handleSubmit, formState: { errors, isValid } } = useForm({ mode: 'onChange' });
 
-  // Fetch pet data from Supabase when component mounts
   useState(() => {
     const fetchPet = async () => {
       try {
@@ -119,7 +116,7 @@ const AdoptionPage = () => {
             throw new Error('Invalid pet ID');
           }
 
-          const { error } = await supabase
+          const { data: applicationData, error } = await supabase
             .from('adoption_applications')
             .insert([{
               user_id: user?.id,
@@ -129,9 +126,29 @@ const AdoptionPage = () => {
               home_info: finalFormData.homeInfo,
               experience: finalFormData.experience,
               reference_info: finalFormData.references
-            }]);
+            }])
+            .select()
+            .single();
 
           if (error) throw error;
+
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-adoption-email`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              applicationData,
+              userEmail: user?.email,
+              petDetails: pet
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to send notification');
+          }
           
           navigate('/dashboard', { 
             state: { 
@@ -204,7 +221,6 @@ const AdoptionPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          {/* Header and Progress Indicator */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Adoption Application</h1>
             <p className="text-gray-600 mb-6">
@@ -231,9 +247,7 @@ const AdoptionPage = () => {
             </div>
           </div>
 
-          {/* Form Steps */}
           <div className="bg-white rounded-xl shadow-card p-6 md:p-8 max-w-4xl mx-auto">
-            {/* Step 1: Personal Information */}
             {step === 1 && (
               <form onSubmit={handleSubmit(nextStep)}>
                 <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
@@ -371,7 +385,6 @@ const AdoptionPage = () => {
               </form>
             )}
 
-            {/* Step 2: Home Information */}
             {step === 2 && (
               <form onSubmit={handleSubmit(nextStep)}>
                 <h2 className="text-xl font-semibold mb-6">Home Information</h2>
@@ -534,7 +547,6 @@ const AdoptionPage = () => {
               </form>
             )}
 
-            {/* Step 3: Pet Experience */}
             {step === 3 && (
               <form onSubmit={handleSubmit(nextStep)}>
                 <h2 className="text-xl font-semibold mb-6">Pet Care Experience</h2>
@@ -641,7 +653,6 @@ const AdoptionPage = () => {
               </form>
             )}
 
-            {/* Step 4: References */}
             {step === 4 && (
               <form onSubmit={handleSubmit(nextStep)}>
                 <h2 className="text-xl font-semibold mb-6">References</h2>
@@ -727,6 +738,7 @@ const AdoptionPage = () => {
             )}
           </div>
         </motion.div>
+      
       </div>
     </div>
   );
