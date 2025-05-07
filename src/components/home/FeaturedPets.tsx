@@ -1,53 +1,142 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { petsData } from '../../data/petsData';
 import { Heart, ArrowRight } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 const FeaturedPets = () => {
+  const [pets, setPets] = useState([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   
-  const toggleFavorite = (id: string) => {
-    if (favorites.includes(id)) {
-      setFavorites(favorites.filter(petId => petId !== id));
-    } else {
-      setFavorites([...favorites, id]);
+  useEffect(() => {
+    fetchPets();
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user]);
+
+  const fetchPets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pets')
+        .select('*')
+        .limit(4)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPets(data || []);
+    } catch (error) {
+      console.error('Error fetching pets:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const featuredPets = petsData.slice(0, 4);
+  const fetchFavorites = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('wishlists')
+        .select('pet_id')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setFavorites(data?.map(item => item.pet_id) || []);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async (petId: string) => {
+    if (!user) {
+      window.location.href = '/auth';
+      return;
+    }
+
+    try {
+      if (favorites.includes(petId)) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('wishlists')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('pet_id', petId);
+
+        if (error) throw error;
+        setFavorites(favorites.filter(id => id !== petId));
+      } else {
+        // Check if the wishlist item already exists
+        const { data: existingWishlist, error: checkError } = await supabase
+          .from('wishlists')
+          .select()
+          .eq('user_id', user.id)
+          .eq('pet_id', petId)
+          .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          // PGRST116 means no rows returned, which is what we want
+          throw checkError;
+        }
+
+        // Only insert if the wishlist item doesn't exist
+        if (!existingWishlist) {
+          const { error: insertError } = await supabase
+            .from('wishlists')
+            .insert([{ user_id: user.id, pet_id: petId }]);
+
+          if (insertError) throw insertError;
+          setFavorites([...favorites, petId]);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center">
+            <div className="w-16 h-16 border-t-4 border-primary-600 border-solid rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Meet Our Adorable Friends</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              These lovable companions are waiting for their forever homes. 
-              Each has their own unique personality and is ready to bring joy to your life.
-            </p>
-          </motion.div>
-        </div>
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Meet Our Adorable Friends</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            These lovable companions are waiting for their forever homes. 
+            Each has their own unique personality and is ready to bring joy to your life.
+          </p>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredPets.map((pet, index) => (
+          {pets.map((pet: any) => (
             <motion.div
               key={pet.id}
               className="bg-white rounded-xl overflow-hidden shadow-card hover:shadow-lg transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
+              transition={{ duration: 0.4 }}
               viewport={{ once: true }}
             >
               <div className="relative h-56 overflow-hidden">
                 <img
-                  src={pet.imageUrl}
+                  src={pet.image_url}
                   alt={pet.name}
                   className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                 />
@@ -94,7 +183,7 @@ const FeaturedPets = () => {
                       Neutered
                     </span>
                   )}
-                  {pet.houseTrained && (
+                  {pet.house_trained && (
                     <span className="bg-secondary-100 text-secondary-800 text-xs px-2 py-1 rounded">
                       House Trained
                     </span>

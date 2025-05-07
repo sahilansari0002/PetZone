@@ -1,0 +1,25 @@
+-- First, insert the shelters
+INSERT INTO shelters (id, name, address, city, state, zip_code, phone_number, email, website_url, description, image_url, latitude, longitude)
+VALUES
+  ('123e4567-e89b-12d3-a456-426614174000', 'Happy Paws Rescue', '123 Main Street', 'Anytown', 'CA', '90210', '(555) 123-4567', 'info@happypawsrescue.org', 'https://www.happypawsrescue.org', 'Happy Paws Rescue is a no-kill shelter dedicated to finding loving homes for dogs and cats. We offer adoption services, pet care education, and community outreach programs.', 'https://images.pexels.com/photos/1633522/pexels-photo-1633522.jpeg', 34.0522, -118.2437),
+  ('223e4567-e89b-12d3-a456-426614174000', 'Furry Friends Shelter', '456 Oak Avenue', 'Springfield', 'NY', '12345', '(555) 987-6543', 'contact@furryfriendshelter.org', 'https://www.furryfriendshelter.org', 'Furry Friends Shelter is committed to rescuing abandoned and homeless animals. We provide medical care, rehabilitation, and adoption services to help animals find their forever homes.', 'https://images.pexels.com/photos/6131863/pexels-photo-6131863.jpeg', 40.7128, -74.0060),
+  ('323e4567-e89b-12d3-a456-426614174000', 'Paws & Claws Sanctuary', '789 Pine Lane', 'Riverside', 'TX', '78701', '(555) 555-1212', 'help@pawsandclaws.org', 'https://www.pawsandclaws.org', 'Paws & Claws Sanctuary specializes in rescuing animals from high-kill shelters and providing them with the care they need until they find their forever families.', 'https://images.pexels.com/photos/6131886/pexels-photo-6131886.jpeg', 30.2672, -97.7431);
+
+-- Then, insert the pets
+INSERT INTO pets (id, name, species, breed, age, size, gender, description, image_url, health_status, vaccinated, neutered, microchipped, house_trained, good_with_kids, good_with_dogs, good_with_cats, activity_level, shelter_id)
+VALUES
+  ('c82c8d4a-8af3-4b1c-8670-f1abcf2c4567', 'Bella', 'dog', 'Labrador Retriever', 2, 'large', 'female', 'Bella is a friendly and energetic Labrador who loves playing fetch and swimming. She''s great with kids and would make a perfect family pet.', 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg', 'Excellent', true, true, true, true, true, true, false, 'high', '123e4567-e89b-12d3-a456-426614174000'),
+  
+  ('f7d9a2b1-6c4e-4d3f-9e8a-5b2c1d3e4567', 'Max', 'dog', 'German Shepherd', 3, 'large', 'male', 'Max is a loyal and intelligent German Shepherd. He''s well-trained and would make an excellent companion for an active household.', 'https://images.pexels.com/photos/333083/pexels-photo-333083.jpeg', 'Good', true, true, true, true, true, true, true, 'high', '223e4567-e89b-12d3-a456-426614174000'),
+  
+  ('e6c8b3a9-5d2f-4c1e-8b7a-9a3b2c1d4567', 'Luna', 'cat', 'Siamese', 1, 'small', 'female', 'Luna is a playful Siamese kitten who loves to explore. She''s affectionate and would make a great companion for anyone looking for a feline friend.', 'https://images.pexels.com/photos/1543793/pexels-photo-1543793.jpeg', 'Excellent', true, true, true, true, true, false, true, 'medium', '123e4567-e89b-12d3-a456-426614174000'),
+  
+  ('d5b7a1c9-4e3d-2f1e-7b6a-8c9d2e1f4567', 'Charlie', 'dog', 'Golden Retriever', 4, 'large', 'male', 'Charlie is a gentle and affectionate Golden Retriever. He loves long walks and cuddles on the couch.', 'https://images.pexels.com/photos/2253275/pexels-photo-2253275.jpeg', 'Good', true, true, true, true, true, true, true, 'medium', '323e4567-e89b-12d3-a456-426614174000'),
+  
+  ('b4a6c8d2-3e1f-9b7a-5d2c-4f1e3d2b4567', 'Oliver', 'cat', 'Maine Coon', 3, 'medium', 'male', 'Oliver is a majestic Maine Coon with a friendly disposition. He enjoys lounging in sunny spots and playing with string toys.', 'https://images.pexels.com/photos/45201/pexels-photo-45201.jpeg', 'Excellent', true, true, true, true, true, false, true, 'low', '223e4567-e89b-12d3-a456-426614174000'),
+  
+  ('a3b5c7d9-2e1f-8b6a-4d2c-3f1e2d1b4567', 'Daisy', 'dog', 'Beagle', 2, 'medium', 'female', 'Daisy is a sweet Beagle who loves sniffing out adventures. She''s great with other dogs and would thrive in an active household.', 'https://images.pexels.com/photos/1452717/pexels-photo-1452717.jpeg', 'Excellent', true, true, true, true, true, true, false, 'high', '123e4567-e89b-12d3-a456-426614174000'),
+  
+  ('92a4b6c8-1e3d-7f5a-2b4c-1d3e2f1b4567', 'Lucy', 'cat', 'Ragdoll', 2, 'medium', 'female', 'Lucy is a gentle Ragdoll who loves to be held. She''s calm and would be perfect for a quiet home.', 'https://images.pexels.com/photos/104827/pexels-photo-104827.jpeg', 'Good', true, true, true, true, true, false, true, 'low', '323e4567-e89b-12d3-a456-426614174000'),
+  
+  ('81c3e5f7-9b2d-4f6a-1a8b-7c9d2e3f4567', 'Rocky', 'dog', 'Bulldog', 5, 'medium', 'male', 'Rocky is a laid-back Bulldog who loves naps and short walks. He''s looking for a family to shower with love.', 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg', 'Good', true, true, true, true, true, true, false, 'low', '223e4567-e89b-12d3-a456-426614174000');

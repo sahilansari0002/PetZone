@@ -53,6 +53,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
   const loadCart = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('cart_items')
         .select('*')
@@ -62,14 +63,14 @@ export const CartProvider = ({ children }: CartProviderProps) => {
         throw error;
       }
 
-      // Convert database items to CartItem format
-      const cartItems = data.map(item => ({
-        id: item.id,
-        product: JSON.parse(item.product_id), // We store the entire product object
-        quantity: item.quantity,
-      }));
-
-      setItems(cartItems);
+      if (data) {
+        const cartItems = data.map(item => ({
+          id: item.id,
+          product: JSON.parse(item.product_id),
+          quantity: item.quantity,
+        }));
+        setItems(cartItems);
+      }
     } catch (error) {
       console.error('Error loading cart:', error);
     } finally {
@@ -98,14 +99,18 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
         if (error) throw error;
 
-        setItems([...items, {
-          id: data.id,
-          product,
-          quantity: 1,
-        }]);
+        if (data) {
+          const newItem = {
+            id: data.id,
+            product,
+            quantity: 1,
+          };
+          setItems(prevItems => [...prevItems, newItem]);
+        }
       }
     } catch (error) {
       console.error('Error adding item to cart:', error);
+      throw error;
     }
   };
 
@@ -123,9 +128,10 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
       if (error) throw error;
 
-      setItems(items.filter(item => item.product.id !== productId));
+      setItems(prevItems => prevItems.filter(item => item.product.id !== productId));
     } catch (error) {
       console.error('Error removing item from cart:', error);
+      throw error;
     }
   };
 
@@ -143,13 +149,14 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
       if (error) throw error;
 
-      setItems(items.map(item =>
+      setItems(prevItems => prevItems.map(item =>
         item.product.id === productId
           ? { ...item, quantity }
           : item
       ));
     } catch (error) {
       console.error('Error updating cart item quantity:', error);
+      throw error;
     }
   };
 
@@ -167,6 +174,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
       setItems([]);
     } catch (error) {
       console.error('Error clearing cart:', error);
+      throw error;
     }
   };
 

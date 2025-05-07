@@ -2,7 +2,7 @@ import { Pet } from '../types';
 
 export const petsData: Pet[] = [
   {
-    id: '1',
+    id: 'c82c8d4a-8af3-4b1c-8670-f1abcf2c4567',  // Changed to valid UUID format
     name: 'Bella',
     species: 'dog',
     breed: 'Labrador Retriever',
@@ -25,7 +25,7 @@ export const petsData: Pet[] = [
     shelterId: '1',
   },
   {
-    id: '2',
+    id: 'f7d9a2b1-6c4e-4d3f-9e8a-5b2c1d3e4567',  // Changed to valid UUID format
     name: 'Max',
     species: 'dog',
     breed: 'German Shepherd',
@@ -48,7 +48,7 @@ export const petsData: Pet[] = [
     shelterId: '2',
   },
   {
-    id: '3',
+    id: 'e6c8b3a9-5d2f-4c1e-8b7a-9a3b2c1d4567',  // Changed to valid UUID format
     name: 'Luna',
     species: 'cat',
     breed: 'Siamese',
@@ -71,7 +71,7 @@ export const petsData: Pet[] = [
     shelterId: '1',
   },
   {
-    id: '4',
+    id: 'd5b7a1c9-4e3d-2f1e-7b6a-8c9d2e1f4567',  // Changed to valid UUID format
     name: 'Charlie',
     species: 'dog',
     breed: 'Golden Retriever',
@@ -94,7 +94,7 @@ export const petsData: Pet[] = [
     shelterId: '3',
   },
   {
-    id: '5',
+    id: 'b4a6c8d2-3e1f-9b7a-5d2c-4f1e3d2b4567',  // Changed to valid UUID format
     name: 'Oliver',
     species: 'cat',
     breed: 'Maine Coon',
@@ -117,7 +117,7 @@ export const petsData: Pet[] = [
     shelterId: '2',
   },
   {
-    id: '6',
+    id: 'a3b5c7d9-2e1f-8b6a-4d2c-3f1e2d1b4567',  // Changed to valid UUID format
     name: 'Daisy',
     species: 'dog',
     breed: 'Beagle',
@@ -140,7 +140,7 @@ export const petsData: Pet[] = [
     shelterId: '1',
   },
   {
-    id: '7',
+    id: '92a4b6c8-1e3d-7f5a-2b4c-1d3e2f1b4567',  // Changed to valid UUID format
     name: 'Lucy',
     species: 'cat',
     breed: 'Ragdoll',
@@ -163,7 +163,7 @@ export const petsData: Pet[] = [
     shelterId: '3',
   },
   {
-    id: '8',
+    id: '81c3e5g7-9b2d-4f6a-1h8j-7k9l2m3n4567',  // Changed to valid UUID format
     name: 'Rocky',
     species: 'dog',
     breed: 'Bulldog',

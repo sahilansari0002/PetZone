@@ -22,6 +22,7 @@ const testimonials = [
     image: "https://images.pexels.com/photos/6816854/pexels-photo-6816854.jpeg",
     petName: "Charlie"
   }
+
 ];
 
 const Testimonials = () => {

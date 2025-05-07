@@ -17,7 +17,7 @@ const SheltersPage = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Partner Shelters</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             We work with these amazing animal shelters to find loving homes for pets in need. 
-            Visit them to meet animals in person or learn how you can help.
+            Visit them to meet animals in person.
           </p>
         </motion.div>
 
@@ -62,7 +62,6 @@ const SheltersPage = () => {
                       <div>
                         <p className="font-medium">Hours Today:</p>
                         <p className="text-sm">
-                          {/* This would normally check the current day */}
                           {shelter.hours.monday}
                         </p>
                       </div>
@@ -94,7 +93,8 @@ const SheltersPage = () => {
           ))}
         </div>
 
-        <div className="mt-12 bg-white rounded-xl overflow-hidden shadow-card">
+               {/* Map Placeholder */}
+               <div className="mt-12 bg-white rounded-xl overflow-hidden shadow-card">
   <div className="p-6 border-b">
     <h2 className="text-2xl font-semibold text-gray-900">Find Us</h2>
   </div>
@@ -111,25 +111,6 @@ const SheltersPage = () => {
     ></iframe>
   </div>
 </div>
-        
-        {/* Volunteer Call to Action */}
-        <div className="mt-12 bg-primary-700 rounded-xl p-8 text-white">
-          <div className="md:flex items-center justify-between">
-            <div className="mb-6 md:mb-0 md:mr-6">
-              <h2 className="text-2xl font-bold mb-2">Want to Make a Difference?</h2>
-              <p className="text-primary-100">
-                Our partner shelters are always looking for volunteers to help care for animals, 
-                assist with adoption events, and more.
-              </p>
-            </div>
-            <Link
-              to="/volunteer"
-              className="bg-white text-primary-700 hover:bg-gray-100 px-6 py-3 rounded-lg font-medium inline-block transition-colors"
-            >
-              Become a Volunteer
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   );

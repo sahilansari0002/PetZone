@@ -2,6 +2,9 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { ShoppingCart, Star, Filter, Search } from 'lucide-react';
 import { productsData } from '../data/productsData';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const ProductsPage = () => {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -11,8 +14,21 @@ const ProductsPage = () => {
     minPrice: '',
     maxPrice: '',
   });
+  const { addItem } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const toggleFilter = () => setFilterOpen(!filterOpen);
+
+  const handleAddToCart = async (product: any) => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    await addItem(product);
+    // Show success message or feedback
+    alert('Item added to cart successfully!');
+  };
 
   // This would be handled properly in a real app
   const filteredProducts = productsData;
@@ -200,7 +216,10 @@ const ProductsPage = () => {
                       <span className="text-gray-900 font-bold">₹{product.price.toFixed(2)}</span>
                     )}
                   </div>
-                  <button className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-full transition-colors">
+                  <button 
+                    onClick={() => handleAddToCart(product)}
+                    className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-full transition-colors"
+                  >
                     <ShoppingCart className="h-5 w-5" />
                   </button>
                 </div>

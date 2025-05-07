@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { PawPrint, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { PawPrint, Mail, Lock, User, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login, register } = useAuth();
@@ -22,17 +25,42 @@ const AuthPage = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
+    setSuccess('');
   };
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
     setError('');
+    setSuccess('');
+    setIsForgotPassword(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) throw error;
+
+      setSuccess('Password reset instructions have been sent to your email.');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setSuccess('');
     
     try {
       if (isLogin) {
@@ -71,8 +99,8 @@ const AuthPage = () => {
         <div className="max-w-md mx-auto">
           <motion.div 
             className="bg-white rounded-xl shadow-card p-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
           >
             <div className="text-center mb-8">
@@ -82,12 +110,16 @@ const AuthPage = () => {
                 </div>
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {isLogin ? 'Welcome Back!' : 'Create an Account'}
+                {isForgotPassword 
+                  ? 'Reset Your Password'
+                  : isLogin ? 'Welcome Back!' : 'Create an Account'}
               </h1>
               <p className="text-gray-600">
-                {isLogin 
-                  ? 'Sign in to access your account and saved pets' 
-                  : 'Join our community to save favorites and apply for adoption'
+                {isForgotPassword 
+                  ? 'Enter your email to receive password reset instructions'
+                  : isLogin 
+                    ? 'Sign in to access your account and saved pets' 
+                    : 'Join our community to save favorites and apply for adoption'
                 }
               </p>
             </div>
@@ -98,8 +130,14 @@ const AuthPage = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {!isLogin && (
+            {success && (
+              <div className="bg-success-100 text-success-800 p-3 rounded-lg mb-6">
+                {success}
+              </div>
+            )}
+
+            <form onSubmit={isForgotPassword ? handleForgotPassword : handleSubmit} className="space-y-6">
+              {!isLogin && !isForgotPassword && (
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name
@@ -143,28 +181,30 @@ const AuthPage = () => {
                 </div>
               </div>
               
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <Lock className="h-5 w-5" />
-                  </span>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="••••••••"
-                    required
-                  />
+              {!isForgotPassword && (
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                      <Lock className="h-5 w-5" />
+                    </span>
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
               
-              {!isLogin && (
+              {!isLogin && !isForgotPassword && (
                 <div>
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                     Confirm Password
@@ -187,7 +227,7 @@ const AuthPage = () => {
                 </div>
               )}
               
-              {isLogin && (
+              {isLogin && !isForgotPassword && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <input
@@ -200,9 +240,13 @@ const AuthPage = () => {
                       Remember me
                     </label>
                   </div>
-                  <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-700">
+                  <button 
+                    type="button"
+                    onClick={() => setIsForgotPassword(true)}
+                    className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                  >
                     Forgot password?
-                  </a>
+                  </button>
                 </div>
               )}
               
@@ -219,11 +263,11 @@ const AuthPage = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    {isLogin ? 'Signing in...' : 'Creating account...'}
+                    {isForgotPassword ? 'Sending reset instructions...' : isLogin ? 'Signing in...' : 'Creating account...'}
                   </>
                 ) : (
                   <>
-                    {isLogin ? 'Sign In' : 'Create Account'}
+                    {isForgotPassword ? 'Send Reset Instructions' : isLogin ? 'Sign In' : 'Create Account'}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
@@ -231,19 +275,29 @@ const AuthPage = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
+              {isForgotPassword ? (
                 <button 
-                  type="button"
-                  onClick={toggleAuthMode}
-                  className="text-primary-600 font-medium hover:text-primary-700"
+                  onClick={() => setIsForgotPassword(false)}
+                  className="text-primary-600 font-medium hover:text-primary-700 inline-flex items-center"
                 >
-                  {isLogin ? 'Sign up' : 'Sign in'}
+                  <ArrowLeft className="mr-1 h-4 w-4" />
+                  Back to sign in
                 </button>
-              </p>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  {isLogin ? "Don't have an account? " : "Already have an account? "}
+                  <button 
+                    type="button"
+                    onClick={toggleAuthMode}
+                    className="text-primary-600 font-medium hover:text-primary-700"
+                  >
+                    {isLogin ? 'Sign up' : 'Sign in'}
+                  </button>
+                </p>
+              )}
             </div>
             
-            {isLogin && (
+            {isLogin && !isForgotPassword && (
               <div className="mt-8">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">

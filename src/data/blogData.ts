@@ -168,7 +168,7 @@ export const blogData: BlogPost[] = [
     imageUrl: 'https://media-hosting.imagekit.io/0399191200fc4988/Screenshot%202025-04-21%20175532.png?Expires=1839846365&Key-Pair-Id=K2ZIVPTIP2VGHC&Signature=rRQQIqsXaG6hPePGqHuIT0RyIMF4IzJLbaPkyAvzNYDNo96yCYoo-1ZJRCDobC~7mva7Gkw98wrV6YD42vq77FZgRPylx-qpwERhs3XFi7H0p2Uzx-8sGOYZHiUCwOPK3UV8sh6TIgM0PZfGKpgaoIX1DlAbmyrvwZlhR8sZmJ-D4j6n2XYTy6KrOxpuf4x9YZeKa6q7olC5~f6FJN8S7GkpN8tTb4pelehQfQSw37eeRBxbJIDZM8XaFpKp9-zr17Rad7UZJKZ2~8-1ZfaMeBBvFF2ZAY1oihfzAzk0z2sJvJQNFHxH209XpGHpVNPs2kwe660di5wQfs6NWLnTfA__',
     author: {
       name: 'Feline Behavior Specialist',
-      avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
+      avatar: 'https://media-hosting.imagekit.io/a6e578e7ba8c4725/Screenshot%202025-04-21%20175723.png?Expires=1839846452&Key-Pair-Id=K2ZIVPTIP2VGHC&Signature=WiebVne3JV3cLDh6OKjv7PLyAAsVpdbYBTFTRNzd28-Xl5TBcRXJWjJ6wHuquPhL5OmlhWj17IssKTo7WucZVz9gt55jl5exXOMRUcLh-hp4lKalj4lt4ePCCCwIl0b6Aihok1ZSDjjid60X0JXsbTq5yK4WNKwPyjXWjRUdQbaeE3kzo6H7IX5mmDkhCGg2NCg-xCFOSNVrQdqTBJG1~mgNEjQU0ljM0phDz2iiKbGfWoonzmWuxuibquYT3F8-zResILEspH13EOf7tm18UdFkS1FWSSQo3TT8u0wBPuzsDgLhVQXd9RqhFAg~hYXmt~MUhA39WjhkkrZbqbm-Vw__',
     },
     publishDate: '2023-06-23',
     categories: ['Pet Behavior', 'Cats'],
@@ -239,7 +239,7 @@ export const blogData: BlogPost[] = [
     imageUrl: 'https://media-hosting.imagekit.io/a6e578e7ba8c4725/Screenshot%202025-04-21%20175723.png?Expires=1839846452&Key-Pair-Id=K2ZIVPTIP2VGHC&Signature=WiebVne3JV3cLDh6OKjv7PLyAAsVpdbYBTFTRNzd28-Xl5TBcRXJWjJ6wHuquPhL5OmlhWj17IssKTo7WucZVz9gt55jl5exXOMRUcLh-hp4lKalj4lt4ePCCCwIl0b6Aihok1ZSDjjid60X0JXsbTq5yK4WNKwPyjXWjRUdQbaeE3kzo6H7IX5mmDkhCGg2NCg-xCFOSNVrQdqTBJG1~mgNEjQU0ljM0phDz2iiKbGfWoonzmWuxuibquYT3F8-zResILEspH13EOf7tm18UdFkS1FWSSQo3TT8u0wBPuzsDgLhVQXd9RqhFAg~hYXmt~MUhA39WjhkkrZbqbm-Vw__',
     author: {
       name: 'Emma Rodriguez',
-      avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg',
+      avatar: 'https://media-hosting.imagekit.io/a6e578e7ba8c4725/Screenshot%202025-04-21%20175723.png?Expires=1839846452&Key-Pair-Id=K2ZIVPTIP2VGHC&Signature=WiebVne3JV3cLDh6OKjv7PLyAAsVpdbYBTFTRNzd28-Xl5TBcRXJWjJ6wHuquPhL5OmlhWj17IssKTo7WucZVz9gt55jl5exXOMRUcLh-hp4lKalj4lt4ePCCCwIl0b6Aihok1ZSDjjid60X0JXsbTq5yK4WNKwPyjXWjRUdQbaeE3kzo6H7IX5mmDkhCGg2NCg-xCFOSNVrQdqTBJG1~mgNEjQU0ljM0phDz2iiKbGfWoonzmWuxuibquYT3F8-zResILEspH13EOf7tm18UdFkS1FWSSQo3TT8u0wBPuzsDgLhVQXd9RqhFAg~hYXmt~MUhA39WjhkkrZbqbm-Vw__',
     },
     publishDate: '2023-07-14',
     categories: ['Adoption', 'Senior Pets'],

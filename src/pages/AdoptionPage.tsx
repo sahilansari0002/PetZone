@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { petsData } from '../data/petsData';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, AlertCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -51,7 +51,11 @@ const AdoptionPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const pet = petsData.find(p => p.id === id);
+  
+  // First, fetch the pet data from Supabase instead of using petsData array
+  const [pet, setPet] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -62,6 +66,33 @@ const AdoptionPage = () => {
   });
   
   const { register, handleSubmit, formState: { errors, isValid } } = useForm({ mode: 'onChange' });
+
+  // Fetch pet data from Supabase when component mounts
+  useState(() => {
+    const fetchPet = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pets')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        if (!data) throw new Error('Pet not found');
+
+        setPet(data);
+      } catch (err: any) {
+        setError(err.message);
+        console.error('Error fetching pet:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchPet();
+    }
+  }, [id]);
 
   const nextStep = async (data: any) => {
     switch(step) {
@@ -84,10 +115,7 @@ const AdoptionPage = () => {
         };
 
         try {
-          // Find the pet's UUID from petsData
-          const petUuid = petsData.find(p => p.id === id)?.id;
-          
-          if (!petUuid) {
+          if (!pet?.id) {
             throw new Error('Invalid pet ID');
           }
 
@@ -95,7 +123,8 @@ const AdoptionPage = () => {
             .from('adoption_applications')
             .insert([{
               user_id: user?.id,
-              pet_id: petUuid,
+              pet_id: pet.id,
+              status: 'pending',
               personal_info: finalFormData.personalInfo,
               home_info: finalFormData.homeInfo,
               experience: finalFormData.experience,
@@ -110,9 +139,9 @@ const AdoptionPage = () => {
               type: 'success'
             }
           });
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error submitting application:', error);
-          // Handle error appropriately
+          setError(error.message);
         }
         return;
     }
@@ -142,7 +171,17 @@ const AdoptionPage = () => {
     );
   }
 
-  if (!pet) {
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Loading pet information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !pet) {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
         <h1 className="text-2xl font-bold mb-4">Pet Not Found</h1>

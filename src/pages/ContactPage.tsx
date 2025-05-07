@@ -210,8 +210,8 @@ const ContactPage = () => {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-800 mb-1">Email</h3>
-                    <p className="text-gray-600">contact@petzone.com</p>
-                    <p className="text-gray-600">support@petzone.com</p>
+                    <p className="text-gray-600">ashvinidharmale25@gmail.com</p>
+                    <p className="text-gray-600">jagdalesrushti20@gmail.com</p>
                   </div>
                 </div>
                 
@@ -220,9 +220,10 @@ const ContactPage = () => {
                     <Phone className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800 mb-1">Phone</h3>
+                  <h3 className="font-medium text-gray-800 mb-1">Phone</h3>
                     <p className="text-gray-600">9096193999</p>
-                    <p className="text-gray-500 text-sm">Sunday-Saturday, 9AM-10PM</p>
+                    <p className="text-gray-500 text-sm">Monday-Sunday, 9AM-10PM</p>
+
                   </div>
                 </div>
                 
@@ -231,7 +232,7 @@ const ContactPage = () => {
                     <MapPin className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800 mb-1">Main Office</h3>
+                  <h3 className="font-medium text-gray-800 mb-1">Main Office</h3>
                     <p className="text-gray-600">Satav Chauk Jawahar nagar Akola</p>
                     <p className="text-gray-600">Akola City, 444001</p>
                     <p className="text-gray-500 text-sm mt-1">Open for visitors by appointment only</p>
@@ -265,8 +266,8 @@ const ContactPage = () => {
           </motion.div>
         </div>
 
-        {/* Map Placeholder */}
-        <div className="mt-12 bg-white rounded-xl overflow-hidden shadow-card">
+               {/* Map Placeholder */}
+               <div className="mt-12 bg-white rounded-xl overflow-hidden shadow-card">
   <div className="p-6 border-b">
     <h2 className="text-2xl font-semibold text-gray-900">Find Us</h2>
   </div>
@@ -283,7 +284,6 @@ const ContactPage = () => {
     ></iframe>
   </div>
 </div>
-
       </div>
     </div>
   );

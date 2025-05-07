@@ -1,18 +1,100 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { petsData } from '../data/petsData';
-import { sheltersData } from '../data/sheltersData';
 import { Heart, MapPin, Calendar, Activity, Shield, Check, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const PetDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const [isFavorite, setIsFavorite] = useState(false);
-  
-  // Find the pet by ID, if not found show "not found"
-  const pet = petsData.find(p => p.id === id);
-  
-  if (!pet) {
+  const [pet, setPet] = useState<any>(null);
+  const [shelter, setShelter] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchPetAndWishlistStatus = async () => {
+      try {
+        // Fetch pet details
+        const { data: petData, error: petError } = await supabase
+          .from('pets')
+          .select('*, shelters(*)')
+          .eq('id', id)
+          .single();
+
+        if (petError) throw petError;
+        if (!petData) throw new Error('Pet not found');
+
+        setPet(petData);
+        setShelter(petData.shelters);
+
+        // Only check wishlist status if user is logged in
+        if (user && id) {
+          const { data: wishlistData } = await supabase
+            .from('wishlists')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('pet_id', id)
+            .single();
+
+          setIsFavorite(!!wishlistData);
+        }
+      } catch (err: any) {
+        setError(err.message);
+        console.error('Error fetching pet:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchPetAndWishlistStatus();
+    }
+  }, [id, user]);
+
+  const toggleFavorite = async () => {
+    if (!user || !id) {
+      // Redirect to login if not authenticated
+      window.location.href = '/auth';
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        // Remove from wishlist
+        const { error } = await supabase
+          .from('wishlists')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('pet_id', id);
+
+        if (error) throw error;
+      } else {
+        // Add to wishlist
+        const { error } = await supabase
+          .from('wishlists')
+          .insert([{ user_id: user.id, pet_id: id }]);
+
+        if (error) throw error;
+      }
+
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
+        <div className="w-16 h-16 border-t-4 border-primary-600 border-solid rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error || !pet) {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
         <h1 className="text-2xl font-bold mb-4">Pet Not Found</h1>
@@ -26,11 +108,6 @@ const PetDetailsPage = () => {
       </div>
     );
   }
-
-  // Find shelter info
-  const shelter = sheltersData.find(s => s.id === pet.shelterId);
-
-  const toggleFavorite = () => setIsFavorite(!isFavorite);
 
   return (
     <div className="min-h-screen pt-24 pb-16 bg-gray-50">
@@ -63,7 +140,7 @@ const PetDetailsPage = () => {
             <div className="bg-white rounded-xl overflow-hidden shadow-card">
               <div className="relative h-80 md:h-96">
                 <img
-                  src={pet.imageUrl}
+                  src={pet.image_url}
                   alt={pet.name}
                   className="w-full h-full object-cover"
                 />
@@ -117,14 +194,14 @@ const PetDetailsPage = () => {
                       <Activity className="w-4 h-4 text-primary-600 mr-2" />
                       <span className="text-sm font-medium text-gray-700">Activity</span>
                     </div>
-                    <p className="text-gray-900 capitalize">{pet.activityLevel}</p>
+                    <p className="text-gray-900 capitalize">{pet.activity_level}</p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <div className="flex items-center mb-1">
                       <Shield className="w-4 h-4 text-primary-600 mr-2" />
                       <span className="text-sm font-medium text-gray-700">Health</span>
                     </div>
-                    <p className="text-gray-900">{pet.healthStatus}</p>
+                    <p className="text-gray-900">{pet.health_status}</p>
                   </div>
                 </div>
 
@@ -138,29 +215,29 @@ const PetDetailsPage = () => {
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold mb-3">Good With</h2>
                   <div className="grid grid-cols-3 gap-3">
-                    <div className={`flex items-center p-3 rounded-lg ${pet.goodWith.kids ? 'bg-success-100' : 'bg-gray-100'}`}>
-                      {pet.goodWith.kids ? (
+                    <div className={`flex items-center p-3 rounded-lg ${pet.good_with_kids ? 'bg-success-100' : 'bg-gray-100'}`}>
+                      {pet.good_with_kids ? (
                         <Check className="w-5 h-5 text-success-700 mr-2" />
                       ) : (
                         <AlertCircle className="w-5 h-5 text-gray-400 mr-2" />
                       )}
-                      <span className={`${pet.goodWith.kids ? 'text-success-800' : 'text-gray-500'}`}>Kids</span>
+                      <span className={`${pet.good_with_kids ? 'text-success-800' : 'text-gray-500'}`}>Kids</span>
                     </div>
-                    <div className={`flex items-center p-3 rounded-lg ${pet.goodWith.dogs ? 'bg-success-100' : 'bg-gray-100'}`}>
-                      {pet.goodWith.dogs ? (
+                    <div className={`flex items-center p-3 rounded-lg ${pet.good_with_dogs ? 'bg-success-100' : 'bg-gray-100'}`}>
+                      {pet.good_with_dogs ? (
                         <Check className="w-5 h-5 text-success-700 mr-2" />
                       ) : (
                         <AlertCircle className="w-5 h-5 text-gray-400 mr-2" />
                       )}
-                      <span className={`${pet.goodWith.dogs ? 'text-success-800' : 'text-gray-500'}`}>Dogs</span>
+                      <span className={`${pet.good_with_dogs ? 'text-success-800' : 'text-gray-500'}`}>Dogs</span>
                     </div>
-                    <div className={`flex items-center p-3 rounded-lg ${pet.goodWith.cats ? 'bg-success-100' : 'bg-gray-100'}`}>
-                      {pet.goodWith.cats ? (
+                    <div className={`flex items-center p-3 rounded-lg ${pet.good_with_cats ? 'bg-success-100' : 'bg-gray-100'}`}>
+                      {pet.good_with_cats ? (
                         <Check className="w-5 h-5 text-success-700 mr-2" />
                       ) : (
                         <AlertCircle className="w-5 h-5 text-gray-400 mr-2" />
                       )}
-                      <span className={`${pet.goodWith.cats ? 'text-success-800' : 'text-gray-500'}`}>Cats</span>
+                      <span className={`${pet.good_with_cats ? 'text-success-800' : 'text-gray-500'}`}>Cats</span>
                     </div>
                   </div>
                 </div>
@@ -194,7 +271,7 @@ const PetDetailsPage = () => {
                 <h2 className="text-xl font-semibold mb-4">Where to find {pet.name}</h2>
                 <div className="flex items-start mb-4">
                   <img
-                    src={shelter.imageUrl}
+                    src={shelter.image_url}
                     alt={shelter.name}
                     className="w-16 h-16 rounded-lg object-cover mr-4"
                   />
@@ -207,7 +284,7 @@ const PetDetailsPage = () => {
                   </div>
                 </div>
                 <div className="mb-4 text-sm text-gray-600">
-                  <p className="mb-2"><strong>Phone:</strong> {shelter.phoneNumber}</p>
+                  <p className="mb-2"><strong>Phone:</strong> {shelter.phone_number}</p>
                   <p><strong>Email:</strong> {shelter.email}</p>
                 </div>
                 <Link 

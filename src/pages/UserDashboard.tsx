@@ -54,16 +54,75 @@ const UserDashboard = () => {
         }
       };
 
-      // Fetch applications
+      // Fetch applications with real-time updates
       const fetchApplications = async () => {
-        const { data, error } = await supabase
+        const { data: initialData, error: initialError } = await supabase
           .from('adoption_applications')
-          .select('*')
-          .eq('user_id', user.id);
+          .select(`
+            *,
+            pets (
+              id,
+              name,
+              breed,
+              image_url
+            )
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-        if (!error && data) {
-          setApplications(data);
+        if (!initialError && initialData) {
+          setApplications(initialData);
         }
+
+        // Subscribe to real-time changes
+        const subscription = supabase
+          .channel('adoption_applications_changes')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'adoption_applications',
+              filter: `user_id=eq.${user.id}`
+            },
+            async (payload) => {
+              // Fetch the updated application with pet details
+              if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+                const { data: updatedApp } = await supabase
+                  .from('adoption_applications')
+                  .select(`
+                    *,
+                    pets (
+                      id,
+                      name,
+                      breed,
+                      image_url
+                    )
+                  `)
+                  .eq('id', payload.new.id)
+                  .single();
+
+                if (updatedApp) {
+                  setApplications(prev => {
+                    const index = prev.findIndex(app => app.id === updatedApp.id);
+                    if (index >= 0) {
+                      const newApps = [...prev];
+                      newApps[index] = updatedApp;
+                      return newApps;
+                    }
+                    return [updatedApp, ...prev];
+                  });
+                }
+              } else if (payload.eventType === 'DELETE') {
+                setApplications(prev => prev.filter(app => app.id !== payload.old.id));
+              }
+            }
+          )
+          .subscribe();
+
+        return () => {
+          subscription.unsubscribe();
+        };
       };
 
       fetchProfile();
@@ -101,7 +160,7 @@ const UserDashboard = () => {
                 <UserIcon className="h-8 w-8 text-primary-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{userProfile?.full_name || user?.name || 'User'}'s Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{userProfile?.full_name || user?.email}</h1>
                 <p className="text-gray-600">{user?.email}</p>
               </div>
             </div>
@@ -151,32 +210,28 @@ const UserDashboard = () => {
                   <Bell className="h-5 w-5 text-gray-500" />
                 </div>
                 <div className="space-y-4">
-                  <div className="flex items-start">
-                    <div className="bg-primary-100 p-2 rounded-full mr-3">
-                      <Heart className="h-4 w-4 text-primary-600" />
+                  {applications.slice(0, 2).map((app) => (
+                    <div key={app.id} className="flex items-start">
+                      <div className={`p-2 rounded-full mr-3 ${
+                        app.status === 'approved' 
+                          ? 'bg-success-100 text-success-600'
+                          : app.status === 'pending'
+                          ? 'bg-secondary-100 text-secondary-600'
+                          : 'bg-error-100 text-error-600'
+                      }`}>
+                        <Calendar className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-800">
+                          Your adoption application for {app.pets?.name} is <span className="font-medium">{app.status}</span>
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(app.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-800">Your adoption application for <span className="font-medium">Bella</span> was approved!</p>
-                      <p className="text-xs text-gray-500 mt-1">2 days ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="bg-secondary-100 p-2 rounded-full mr-3">
-                      <Calendar className="h-4 w-4 text-secondary-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-800">Scheduled pickup appointment for <span className="font-medium">Bella</span></p>
-                      <p className="text-xs text-gray-500 mt-1">1 week ago</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-                <a 
-                  href="#" 
-                  className="text-primary-600 hover:text-primary-800 text-sm font-medium flex items-center mt-4"
-                >
-                  View all notifications
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </a>
               </div>
             </motion.div>
 
@@ -187,71 +242,6 @@ const UserDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              {/* Favorites Tab */}
-              {activeTab === 'favorites' && (
-                <div className="bg-white rounded-xl shadow-card p-6">
-                  <h2 className="text-xl font-semibold mb-6">Your Favorite Pets</h2>
-                  
-                  {favorites.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="bg-gray-100 p-3 inline-flex rounded-full mb-4">
-                        <Heart className="h-6 w-6 text-gray-400" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-800 mb-2">No favorites yet</h3>
-                      <p className="text-gray-600 mb-4">Browse our available pets and heart the ones you love!</p>
-                      <Link 
-                        to="/pets" 
-                        className="text-primary-600 hover:text-primary-800 font-medium"
-                      >
-                        Browse Pets
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {favorites.map(favoriteId => {
-                        const pet = petsData.find(p => p.id === favoriteId);
-                        if (!pet) return null;
-                        
-                        return (
-                          <div key={pet.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                            <div className="relative h-40">
-                              <img
-                                src={pet.imageUrl}
-                                alt={pet.name}
-                                className="w-full h-full object-cover"
-                              />
-                              <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow">
-                                <Heart className="h-4 w-4 text-primary-600 fill-current" />
-                              </button>
-                            </div>
-                            <div className="p-4">
-                              <h3 className="font-semibold text-gray-900">{pet.name}</h3>
-                              <p className="text-gray-600 text-sm">
-                                {pet.breed} • {pet.age} years old
-                              </p>
-                              <div className="mt-3 flex justify-between">
-                                <Link
-                                  to={`/pets/${pet.id}`}
-                                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                                >
-                                  View Profile
-                                </Link>
-                                <Link
-                                  to={`/adopt/${pet.id}`}
-                                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                                >
-                                  Adopt
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-              
               {/* Applications Tab */}
               {activeTab === 'applications' && (
                 <div className="bg-white rounded-xl shadow-card p-6">
@@ -273,54 +263,49 @@ const UserDashboard = () => {
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-200">
-                      {applications.map(app => {
-                        const pet = petsData.find(p => p.id === app.pet_id);
-                        if (!pet) return null;
-                        
-                        return (
-                          <div key={app.id} className="py-4 first:pt-0 last:pb-0">
-                            <div className="flex items-start">
-                              <img
-                                src={pet.imageUrl}
-                                alt={pet.name}
-                                className="w-16 h-16 rounded-lg object-cover mr-4"
-                              />
-                              <div className="flex-1">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="font-semibold text-gray-900">{pet.name}</h3>
-                                    <p className="text-gray-600 text-sm">
-                                      {pet.breed} • {pet.age} years old
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                      app.status === 'approved' 
-                                        ? 'bg-success-100 text-success-800'
-                                        : app.status === 'pending'
-                                        ? 'bg-secondary-100 text-secondary-800'
-                                        : 'bg-error-100 text-error-800'
-                                    }`}>
-                                      {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                                    </span>
-                                  </div>
+                      {applications.map(app => (
+                        <div key={app.id} className="py-4 first:pt-0 last:pb-0">
+                          <div className="flex items-start">
+                            <img
+                              src={app.pets?.image_url}
+                              alt={app.pets?.name}
+                              className="w-16 h-16 rounded-lg object-cover mr-4"
+                            />
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="font-semibold text-gray-900">{app.pets?.name}</h3>
+                                  <p className="text-gray-600 text-sm">
+                                    {app.pets?.breed}
+                                  </p>
                                 </div>
-                                <p className="text-gray-500 text-sm mt-1">
-                                  Applied on {new Date(app.created_at).toLocaleDateString()}
-                                </p>
-                                <div className="mt-2">
-                                  <Link
-                                    to={`/application/${app.id}`}
-                                    className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                                  >
-                                    View Application
-                                  </Link>
+                                <div>
+                                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                    app.status === 'approved' 
+                                      ? 'bg-success-100 text-success-800'
+                                      : app.status === 'pending'
+                                      ? 'bg-secondary-100 text-secondary-800'
+                                      : 'bg-error-100 text-error-800'
+                                  }`}>
+                                    {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                                  </span>
                                 </div>
+                              </div>
+                              <p className="text-gray-500 text-sm mt-1">
+                                Applied on {new Date(app.created_at).toLocaleDateString()}
+                              </p>
+                              <div className="mt-2">
+                                <Link
+                                  to={`/applications/${app.id}`}
+                                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                                >
+                                  View Application Details
+                                </Link>
                               </div>
                             </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

@@ -3,10 +3,56 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useState } from 'react';
 
 const CartPage = () => {
-  const { items, removeItem, updateQuantity, total, loading } = useCart();
+  const { items, removeItem, updateQuantity, total, loading, clearCart } = useCart();
   const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleCheckout = async () => {
+    if (!user?.id || items.length === 0) {
+      setError('Unable to process checkout. Please ensure you are logged in.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const cartItemsWithUserId = items.map(item => ({
+        ...item,
+        user_id: user.id
+      }));
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cartItems: cartItemsWithUserId,
+          userEmail: user.email,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process order');
+      }
+
+      await clearCart();
+      alert('Order processed successfully! Check your email for confirmation.');
+    } catch (error: any) {
+      console.error('Error processing order:', error);
+      setError(error.message || 'Failed to process order. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -69,7 +115,7 @@ const CartPage = () => {
             <div className="divide-y divide-gray-200">
               {items.map((item) => (
                 <motion.div
-                  key={item.product.id}
+                  key={item.id}
                   className="p-6"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -104,7 +150,7 @@ const CartPage = () => {
                         </div>
                         <div className="flex items-center space-x-4">
                           <span className="font-medium text-gray-900">
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                            ₹{(item.product.price * item.quantity).toFixed(2)}
                           </span>
                           <button
                             onClick={() => removeItem(item.product.id)}
@@ -123,8 +169,15 @@ const CartPage = () => {
             <div className="p-6 bg-gray-50">
               <div className="flex justify-between items-center mb-6">
                 <span className="text-lg font-medium text-gray-900">Total</span>
-                <span className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
               </div>
+
+              {error && (
+                <div className="mb-6 p-4 bg-error-100 text-error-800 rounded-lg">
+                  {error}
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/products"
@@ -133,9 +186,20 @@ const CartPage = () => {
                   Continue Shopping
                 </Link>
                 <button
-                  className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                  onClick={handleCheckout}
+                  disabled={isProcessing}
+                  className={`flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors flex items-center justify-center ${
+                    isProcessing ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
                 >
-                  Proceed to Checkout
+                  {isProcessing ? (
+                    <>
+                      <div className="w-5 h-5 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    'Proceed to Checkout'
+                  )}
                 </button>
               </div>
             </div>

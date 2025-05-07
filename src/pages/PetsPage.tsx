@@ -1,11 +1,14 @@
 import { motion } from 'framer-motion';
 import { Filter, Search } from 'lucide-react';
-import { useState } from 'react';
-import { petsData } from '../data/petsData';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const PetsPage = () => {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [pets, setPets] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
     species: '',
     age: '',
@@ -13,10 +16,64 @@ const PetsPage = () => {
     gender: '',
   });
 
+  useEffect(() => {
+    fetchPets();
+  }, []);
+
+  const fetchPets = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('pets')
+        .select(`
+          *,
+          shelters (
+            id,
+            name
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPets(data || []);
+    } catch (error) {
+      console.error('Error fetching pets:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleFilter = () => setFilterOpen(!filterOpen);
 
-  // This would normally have proper filtering logic
-  const filteredPets = petsData;
+  const filteredPets = pets.filter((pet: any) => {
+    const matchesSearch = 
+      searchTerm === '' || 
+      pet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pet.breed.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pet.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesSpecies = activeFilters.species === '' || pet.species === activeFilters.species;
+    const matchesAge = activeFilters.age === '' || getAgeCategory(pet.age) === activeFilters.age;
+    const matchesSize = activeFilters.size === '' || pet.size === activeFilters.size;
+    const matchesGender = activeFilters.gender === '' || pet.gender === activeFilters.gender;
+    
+    return matchesSearch && matchesSpecies && matchesAge && matchesSize && matchesGender;
+  });
+
+  const getAgeCategory = (age: number) => {
+    if (age <= 1) return 'baby';
+    if (age <= 3) return 'young';
+    if (age <= 7) return 'adult';
+    return 'senior';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
+        <div className="w-16 h-16 border-t-4 border-primary-600 border-solid rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -45,6 +102,8 @@ const PetsPage = () => {
                 <input
                   type="text"
                   id="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search by name, breed..."
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                 />
@@ -60,9 +119,6 @@ const PetsPage = () => {
               <span className="ml-2 bg-primary-100 text-primary-800 text-xs px-2 py-0.5 rounded-full">
                 {Object.values(activeFilters).filter(Boolean).length}
               </span>
-            </button>
-            <button className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-              Search
             </button>
           </div>
 
@@ -145,17 +201,17 @@ const PetsPage = () => {
 
         {/* Pets Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredPets.map((pet, index) => (
+          {filteredPets.map((pet: any) => (
             <motion.div
               key={pet.id}
               className="bg-white rounded-xl overflow-hidden shadow-card hover:shadow-lg transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
+              transition={{ duration: 0.4 }}
             >
               <div className="relative h-56 overflow-hidden">
                 <img
-                  src={pet.imageUrl}
+                  src={pet.image_url}
                   alt={pet.name}
                   className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                 />
@@ -191,7 +247,7 @@ const PetsPage = () => {
                       Neutered
                     </span>
                   )}
-                  {pet.houseTrained && (
+                  {pet.house_trained && (
                     <span className="bg-secondary-100 text-secondary-800 text-xs px-2 py-1 rounded">
                       House Trained
                     </span>
@@ -215,6 +271,13 @@ const PetsPage = () => {
             </motion.div>
           ))}
         </div>
+
+        {filteredPets.length === 0 && (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No pets found</h3>
+            <p className="text-gray-600">Try adjusting your filters or search criteria</p>
+          </div>
+        )}
       </div>
     </div>
   );
