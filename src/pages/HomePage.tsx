@@ -1,12 +1,35 @@
 import { motion } from 'framer-motion';
 import { Search, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import FeaturedPets from '../components/home/FeaturedPets';
 import Testimonials from '../components/home/Testimonials';
 import HowItWorks from '../components/home/HowItWorks';
 import BlogPreview from '../components/home/BlogPreview';
+import { useState } from 'react';
 
 const HomePage = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useState({
+    petType: '',
+    breed: '',
+    age: '',
+    size: '',
+  });
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const queryParams = new URLSearchParams();
+    
+    // Only add parameters that have values
+    Object.entries(searchParams).forEach(([key, value]) => {
+      if (value) {
+        queryParams.append(key, value);
+      }
+    });
+
+    navigate(`/pets?${queryParams.toString()}`);
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -56,7 +79,7 @@ const HomePage = () => {
         <div className="container mx-auto px-4">
           <div className="bg-white rounded-xl shadow-card -mt-20 p-6 relative z-20">
             <h2 className="text-2xl font-semibold mb-4">Find Your Perfect Match</h2>
-            <div className="flex flex-col md:flex-row gap-4">
+            <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <label htmlFor="pet-type" className="block text-sm font-medium text-gray-700 mb-1">
                   Pet Type
@@ -64,6 +87,8 @@ const HomePage = () => {
                 <select 
                   id="pet-type" 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                  value={searchParams.petType}
+                  onChange={(e) => setSearchParams({ ...searchParams, petType: e.target.value })}
                 >
                   <option value="">All Pets</option>
                   <option value="dog">Dogs</option>
@@ -79,6 +104,8 @@ const HomePage = () => {
                 <select 
                   id="breed" 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                  value={searchParams.breed}
+                  onChange={(e) => setSearchParams({ ...searchParams, breed: e.target.value })}
                 >
                   <option value="">Any Breed</option>
                   <option value="labrador">Labrador Retriever</option>
@@ -95,6 +122,8 @@ const HomePage = () => {
                 <select 
                   id="age" 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                  value={searchParams.age}
+                  onChange={(e) => setSearchParams({ ...searchParams, age: e.target.value })}
                 >
                   <option value="">Any Age</option>
                   <option value="baby">Baby</option>
@@ -110,6 +139,8 @@ const HomePage = () => {
                 <select 
                   id="size" 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                  value={searchParams.size}
+                  onChange={(e) => setSearchParams({ ...searchParams, size: e.target.value })}
                 >
                   <option value="">Any Size</option>
                   <option value="small">Small</option>
@@ -119,14 +150,14 @@ const HomePage = () => {
               </div>
               <div className="flex items-end">
                 <button 
-                  type="button" 
+                  type="submit" 
                   className="w-full bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium flex items-center justify-center transition-colors"
                 >
                   <Search className="mr-2 h-5 w-5" />
                   Search
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </section>

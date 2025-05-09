@@ -1,24 +1,35 @@
 import { motion } from 'framer-motion';
 import { Filter, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 const PetsPage = () => {
+  const [searchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pets, setPets] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
-    species: '',
-    age: '',
-    size: '',
+    species: searchParams.get('petType') || '',
+    age: searchParams.get('age') || '',
+    size: searchParams.get('size') || '',
     gender: '',
   });
 
   useEffect(() => {
     fetchPets();
   }, []);
+
+  useEffect(() => {
+    // Update filters when URL search params change
+    setActiveFilters(prev => ({
+      ...prev,
+      species: searchParams.get('petType') || prev.species,
+      age: searchParams.get('age') || prev.age,
+      size: searchParams.get('size') || prev.size,
+    }));
+  }, [searchParams]);
 
   const fetchPets = async () => {
     try {
@@ -45,6 +56,13 @@ const PetsPage = () => {
 
   const toggleFilter = () => setFilterOpen(!filterOpen);
 
+  const getAgeCategory = (age: number) => {
+    if (age <= 1) return 'baby';
+    if (age <= 3) return 'young';
+    if (age <= 7) return 'adult';
+    return 'senior';
+  };
+
   const filteredPets = pets.filter((pet: any) => {
     const matchesSearch = 
       searchTerm === '' || 
@@ -59,13 +77,6 @@ const PetsPage = () => {
     
     return matchesSearch && matchesSpecies && matchesAge && matchesSize && matchesGender;
   });
-
-  const getAgeCategory = (age: number) => {
-    if (age <= 1) return 'baby';
-    if (age <= 3) return 'young';
-    if (age <= 7) return 'adult';
-    return 'senior';
-  };
 
   if (loading) {
     return (
